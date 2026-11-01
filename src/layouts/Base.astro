@@ -1,0 +1,89 @@
+---
+import '@fontsource-variable/bricolage-grotesque/opsz.css';
+import '@fontsource-variable/atkinson-hyperlegible-next/wght.css';
+import '@fontsource/ibm-plex-mono/latin-400.css';
+import '@fontsource/ibm-plex-mono/latin-500.css';
+import '../styles/global.css';
+import { site } from '../config/links';
+import type { Dictionary } from '../i18n/es';
+
+interface Props {
+	copy: Dictionary;
+}
+
+const { copy } = Astro.props;
+const canonical = new URL(Astro.url.pathname, site.url).href;
+const ogImage = new URL('/og.png', site.url).href;
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'WebSite',
+	name: site.name,
+	alternateName: site.descriptor,
+	url: site.url,
+	inLanguage: copy.lang,
+	description: copy.meta.description,
+};
+---
+
+<!doctype html>
+<html lang={copy.lang}>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{copy.meta.title}</title>
+		<meta name="description" content={copy.meta.description} />
+		<link rel="canonical" href={canonical} />
+		<meta name="theme-color" content="#0B0D0C" />
+		<meta name="color-scheme" content="dark" />
+
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<link rel="icon" href="/favicon.ico" sizes="32x32" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<link rel="sitemap" href="/sitemap-index.xml" />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content={site.name} />
+		<meta property="og:locale" content={copy.ogLocale} />
+		<meta property="og:title" content={copy.meta.title} />
+		<meta property="og:description" content={copy.meta.description} />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:image" content={ogImage} />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:image:alt" content={copy.meta.ogImageAlt} />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={copy.meta.title} />
+		<meta name="twitter:description" content={copy.meta.description} />
+		<meta name="twitter:image" content={ogImage} />
+		<meta name="twitter:image:alt" content={copy.meta.ogImageAlt} />
+
+		<link rel="preload" href="/terrain/puerto-rico.svg" as="image" type="image/svg+xml" />
+		<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+	</head>
+	<body>
+		<a class="skip" href="#contenido">
+			{copy.a11y.skip}
+		</a>
+		<slot />
+	</body>
+</html>
+
+<style>
+	.skip {
+		position: absolute;
+		left: var(--s-4);
+		top: var(--s-4);
+		z-index: 100;
+		padding: var(--s-3) var(--s-4);
+		background: var(--c-accent);
+		color: var(--c-on-accent);
+		font-weight: 600;
+		border-radius: var(--r-control);
+		transform: translateY(-200%);
+	}
+
+	.skip:focus {
+		transform: none;
+	}
+</style>

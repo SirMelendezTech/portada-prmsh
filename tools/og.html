@@ -1,0 +1,90 @@
+<!doctype html>
+<!--
+  Social preview (1200×630). Rendered once to public/og.png with a headless
+  browser, e.g. Playwright: page.setViewportSize({width:1200,height:630});
+  page.goto('file://…/tools/og.html'); page.screenshot({path:'public/og.png'}).
+-->
+<html lang="es-PR">
+	<head>
+		<meta charset="utf-8" />
+		<style>
+			@font-face {
+				font-family: B;
+				src: url(../node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-opsz-normal.woff2)
+					format('woff2');
+				font-weight: 200 800;
+			}
+			@font-face {
+				font-family: A;
+				src: url(../node_modules/@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-wght-normal.woff2)
+					format('woff2');
+				font-weight: 200 800;
+			}
+			@font-face {
+				font-family: M;
+				src: url(../node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2)
+					format('woff2');
+			}
+			html,
+			body {
+				margin: 0;
+				width: 1200px;
+				height: 630px;
+				background: #0b0d0c;
+				color: #f0f2e9;
+				overflow: hidden;
+			}
+			.wrap {
+				position: relative;
+				width: 1200px;
+				height: 630px;
+				box-sizing: border-box;
+				padding: 64px 72px;
+				border: 1px solid #303831;
+			}
+			.mark {
+				display: flex;
+				align-items: center;
+				gap: 14px;
+				font: 750 34px/1 B;
+				letter-spacing: 0.01em;
+			}
+			h1 {
+				margin: 44px 0 0;
+				font: 700 84px/0.98 B;
+				letter-spacing: -0.025em;
+				font-variation-settings: 'opsz' 96;
+				max-width: 9.5ch;
+			}
+			p {
+				position: absolute;
+				left: 72px;
+				bottom: 56px;
+				margin: 0;
+				font: 400 20px/1.3 M;
+				color: #65c8b0;
+			}
+			img {
+				position: absolute;
+				right: -40px;
+				bottom: 96px;
+				width: 760px;
+				opacity: 0.95;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="wrap">
+			<img src="../public/terrain/puerto-rico.svg" alt="" />
+			<div class="mark">
+				<img
+					src="../public/favicon.svg"
+					style="position: static; width: 44px; opacity: 1"
+					alt=""
+				/>PRMSH
+			</div>
+			<h1>Puerto Rico, conectado nodo a nodo.</h1>
+			<p>Meshtastic / MeshCore / redes mesh LoRa en Puerto Rico</p>
+		</div>
+	</body>
+</html>

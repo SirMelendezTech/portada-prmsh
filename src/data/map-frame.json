@@ -1,0 +1,35 @@
+{
+  "source": "AWS Terrain Tiles (Terrarium), zoom 10 — SRTM / USGS 3DEP",
+  "zoom": 10,
+  "world": 262144,
+  "origin": {
+    "x": 82051.072,
+    "y": 117314.26403128123
+  },
+  "scale": 1,
+  "width": 1544,
+  "height": 537,
+  "bbox": {
+    "west": -67.32,
+    "east": -65.2,
+    "north": 18.56,
+    "south": 17.86
+  },
+  "levels": [
+    0,
+    50,
+    150,
+    300,
+    450,
+    600,
+    750,
+    900,
+    1050,
+    1200
+  ],
+  "maxElevation": {
+    "metres": 1304,
+    "x": 530,
+    "y": 297
+  }
+}

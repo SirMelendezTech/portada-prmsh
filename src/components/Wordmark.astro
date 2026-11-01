@@ -1,0 +1,58 @@
+---
+/**
+ * PRMSH mark: three radio nodes joined by two hops, resting on a contour
+ * arc (the island's ridge line). Original geometry; not derived from any
+ * platform's logo.
+ */
+interface Props {
+	size?: number;
+	withText?: boolean;
+}
+const { size = 28, withText = true } = Astro.props;
+---
+
+<span class="wordmark">
+	<svg
+		width={size}
+		height={size}
+		viewBox="0 0 32 32"
+		fill="none"
+		aria-hidden="true"
+		focusable="false"
+	>
+		<path
+			d="M3 25.5c4.5-3.2 8-4.6 13-4.6s8.5 1.4 13 4.6"
+			stroke="#4a5a4e"
+			stroke-width="1.6"
+			stroke-linecap="round"
+		></path>
+		<path
+			d="M6 19 16 7.5 26 15"
+			stroke="#65C8B0"
+			stroke-width="1.8"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+		></path>
+		<circle cx="6" cy="19" r="3" fill="#0B0D0C" stroke="#65C8B0" stroke-width="1.8"></circle>
+		<circle cx="26" cy="15" r="3" fill="#0B0D0C" stroke="#65C8B0" stroke-width="1.8"></circle>
+		<circle cx="16" cy="7.5" r="3.4" fill="#B7F36B"></circle>
+	</svg>
+	{withText && <span class="wordmark__text">PRMSH</span>}
+</span>
+
+<style>
+	.wordmark {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+
+	.wordmark__text {
+		font-family: var(--f-display);
+		font-weight: 750;
+		font-size: 1.25rem;
+		letter-spacing: 0.01em;
+		font-variation-settings: 'opsz' 32;
+		line-height: 1;
+	}
+</style>

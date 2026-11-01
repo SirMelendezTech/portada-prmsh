@@ -1,0 +1,463 @@
+---
+import DecryptedText from './svelte-bits/DecryptedText.svelte';
+import { MAP_W, MAP_H, project, percent, dms } from '../lib/map';
+import { nodes, route, branches } from '../data/illustrative-network';
+import type { Dictionary } from '../i18n/es';
+
+interface Props {
+	copy: Dictionary;
+}
+const { copy } = Astro.props;
+const m = copy.map;
+
+const byId = Object.fromEntries(nodes.map((n) => [n.id, { ...n, ...project(n) }]));
+const seg = ([a, b]: [string, string]) => ({ a: byId[a], b: byId[b] });
+
+const HOP_MS = 650;
+const START_MS = 900;
+// Order in which nodes are reached by the example packet.
+const arrival = new Map<string, number>([[route[0][0], 0]]);
+route.forEach(([, b], i) => arrival.set(b, i + 1));
+
+// Real graticule: every 30′ of longitude, every 30′ of latitude.
+const lons = [-67, -66.5, -66, -65.5];
+const lats = [18, 18.5];
+const lonLines = lons.map((lon) => ({ lon, x: project({ lat: 18, lon }).x }));
+const latLines = lats.map((lat) => ({ lat, y: project({ lat, lon: -66 }).y }));
+
+const regions = [
+	{ text: m.regions.cordillera, lat: 18.235, lon: -66.93, minor: false },
+	{ text: m.regions.north, lat: 18.405, lon: -66.53, minor: true },
+	{ text: m.regions.south, lat: 17.985, lon: -66.33, minor: true },
+	{ text: m.regions.luquillo, lat: 18.385, lon: -65.8, minor: true },
+];
+---
+
+<figure class="plate" aria-labelledby="plate-caption">
+	<div class="plate__head mono">
+		{m.annotations.map((a, i) => (
+			<span class="plate__annot">
+				<DecryptedText client:visible text={a} delay={START_MS + i * 260} />
+			</span>
+		))}
+		<span class="plate__band">{m.band}</span>
+	</div>
+
+	<div class="plate__map" style={`--ar: ${MAP_W} / ${MAP_H}`} role="img" aria-label={m.label}>
+		<img
+			src="/terrain/puerto-rico.svg"
+			width={MAP_W}
+			height={MAP_H}
+			alt=""
+			fetchpriority="high"
+			decoding="async"
+		/>
+
+		<svg
+			class="plate__overlay"
+			viewBox={`0 0 ${MAP_W} ${MAP_H}`}
+			aria-hidden="true"
+			focusable="false"
+		>
+			<g class="grat">
+				{lonLines.map((l) => (
+					<line x1={l.x} y1="0" x2={l.x} y2={MAP_H} />
+				))}
+				{latLines.map((l) => (
+					<line x1="0" y1={l.y} x2={MAP_W} y2={l.y} />
+				))}
+			</g>
+
+			<g class="links">
+				{[...route, ...branches].map((s) => {
+					const { a, b } = seg(s);
+					return <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} />;
+				})}
+			</g>
+
+			<g class="trace">
+				{route.map((s, i) => {
+					const { a, b } = seg(s);
+					return (
+						<line
+							x1={a.x}
+							y1={a.y}
+							x2={b.x}
+							y2={b.y}
+							pathLength="1"
+							style={`--d: ${START_MS + i * HOP_MS}ms; --hop: ${HOP_MS}ms`}
+						/>
+					);
+				})}
+			</g>
+
+			<g class="pulse">
+				{route.map((s, i) => {
+					const { a, b } = seg(s);
+					return (
+						<line
+							x1={a.x}
+							y1={a.y}
+							x2={b.x}
+							y2={b.y}
+							pathLength="1"
+							style={`--d: ${START_MS + i * HOP_MS}ms; --hop: ${HOP_MS}ms`}
+						/>
+					);
+				})}
+			</g>
+
+			<g class="nodes">
+				{nodes.map((n) => {
+					const p = byId[n.id];
+					const t = arrival.get(n.id);
+					return (
+						<g>
+							{t !== undefined && (
+								<circle
+									class="ping"
+									cx={p.x}
+									cy={p.y}
+									r="9"
+									style={`--d: ${START_MS + t * HOP_MS}ms`}
+								/>
+							)}
+							<circle class="node" cx={p.x} cy={p.y} r="8" />
+						</g>
+					);
+				})}
+			</g>
+		</svg>
+
+		{lonLines.map((l) => (
+			<span
+				class="tick tick--lon mono"
+				style={`left: ${((l.x / MAP_W) * 100).toFixed(2)}%`}
+				aria-hidden="true"
+			>
+				{dms(l.lon)}O
+			</span>
+		))}
+		{latLines.map((l) => (
+			<span
+				class="tick tick--lat mono"
+				style={`top: ${((l.y / MAP_H) * 100).toFixed(2)}%`}
+				aria-hidden="true"
+			>
+				{dms(l.lat)}N
+			</span>
+		))}
+
+		{regions.map((r) => (
+			<span class:list={['region', { 'is-minor': r.minor }]} style={percent(r)} aria-hidden="true">
+				{r.text}
+			</span>
+		))}
+
+		{nodes.map((n) => (
+			<span
+				class:list={['label', `label--${n.anchor}`, { 'is-minor': n.minor }]}
+				style={percent(n)}
+				aria-hidden="true"
+			>
+				{n.id === 'punta' ? (
+					<>
+						{n.label}
+						<span class="mono label__meta">1338 m</span>
+					</>
+				) : (
+					n.label
+				)}
+			</span>
+		))}
+	</div>
+
+	<figcaption class="plate__foot" id="plate-caption">
+		<ul class="legend mono">
+			<li>
+				<span class="key key--node" aria-hidden="true"></span>
+				{m.legendNode}
+			</li>
+			<li>
+				<span class="key key--route" aria-hidden="true"></span>
+				{m.legendRoute}
+			</li>
+			<li>
+				<span class="key key--contour" aria-hidden="true"></span>
+				{m.legendContour}
+			</li>
+		</ul>
+		<p class="disclaimer">{m.disclaimer}</p>
+	</figcaption>
+</figure>
+
+<style>
+	.plate {
+		margin: 0;
+		border: 1px solid var(--c-border);
+		background: var(--c-bg);
+		border-radius: var(--r-card);
+	}
+
+	.plate__head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--s-2) var(--s-5);
+		padding: var(--s-3) var(--s-4);
+		border-bottom: 1px solid var(--c-border);
+		color: var(--c-text-2);
+	}
+
+	.plate__annot:first-child {
+		color: var(--c-text);
+		font-weight: 500;
+	}
+
+	.plate__band {
+		margin-left: auto;
+		color: var(--c-accent-2);
+	}
+
+	.plate__map {
+		position: relative;
+		aspect-ratio: var(--ar);
+		margin: clamp(0.75rem, 2.5vw, 2.25rem);
+	}
+
+	.plate__map img,
+	.plate__overlay {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	/* Graticule */
+	.grat line {
+		stroke: var(--c-border);
+		stroke-width: 1;
+		stroke-dasharray: 2 6;
+	}
+
+	/* Illustrative links: dashed so they never read as surveyed paths */
+	.links line {
+		stroke: var(--c-accent-2);
+		stroke-opacity: 0.55;
+		stroke-width: 2;
+		stroke-dasharray: 6 7;
+		stroke-linecap: round;
+	}
+
+	.trace line {
+		stroke: var(--c-accent);
+		stroke-opacity: 0.7;
+		stroke-width: 2.5;
+		stroke-dasharray: 1 1;
+		stroke-dashoffset: 1;
+		animation: trace var(--hop) linear var(--d) forwards;
+	}
+
+	.pulse line {
+		stroke: var(--c-accent);
+		stroke-width: 6;
+		stroke-linecap: round;
+		stroke-dasharray: 0.14 1;
+		stroke-dashoffset: 0.14;
+		opacity: 0;
+		animation: pulse var(--hop) linear var(--d) forwards;
+	}
+
+	.node {
+		fill: var(--c-bg);
+		stroke: var(--c-accent-2);
+		stroke-width: 3.5;
+	}
+
+	.ping {
+		fill: none;
+		stroke: var(--c-accent);
+		stroke-width: 2.5;
+		opacity: 0;
+		transform-box: fill-box;
+		transform-origin: center;
+		animation: ping 900ms var(--ease-out) var(--d) forwards;
+	}
+
+	@keyframes trace {
+		to {
+			stroke-dashoffset: 0;
+		}
+	}
+
+	@keyframes pulse {
+		0% {
+			opacity: 1;
+			stroke-dashoffset: 0.14;
+		}
+		90% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+			stroke-dashoffset: -1;
+		}
+	}
+
+	@keyframes ping {
+		0% {
+			opacity: 0.9;
+			transform: scale(1);
+		}
+		100% {
+			opacity: 0;
+			transform: scale(3.2);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.trace line {
+			animation: none;
+			stroke-dashoffset: 0;
+		}
+
+		.pulse,
+		.ping {
+			display: none;
+		}
+	}
+
+	/* HTML annotations over the map */
+	.tick,
+	.region,
+	.label {
+		position: absolute;
+		pointer-events: none;
+		white-space: nowrap;
+	}
+
+	.tick {
+		color: #7d877c;
+		font-size: 0.6875rem;
+	}
+
+	.tick--lon {
+		top: 0;
+		transform: translate(4px, -2px);
+	}
+
+	.tick--lat {
+		right: 0;
+		transform: translate(0, -125%);
+	}
+
+	.region {
+		transform: translate(-50%, -50%);
+		font-family: var(--f-display);
+		font-style: normal;
+		font-size: clamp(0.6875rem, 0.55rem + 0.45vw, 0.875rem);
+		font-weight: 450;
+		letter-spacing: 0.06em;
+		color: #b9c2b7;
+		text-shadow: 0 0 6px var(--c-bg);
+	}
+
+	.label {
+		font-size: clamp(0.6875rem, 0.6rem + 0.3vw, 0.8125rem);
+		font-weight: 600;
+		color: var(--c-text);
+		line-height: 1.25;
+		text-shadow:
+			0 0 4px var(--c-bg),
+			0 0 8px var(--c-bg);
+	}
+
+	.label__meta {
+		display: block;
+		font-size: 0.6875rem;
+		font-weight: 400;
+		color: var(--c-accent-2);
+	}
+
+	.label--n {
+		transform: translate(-50%, calc(-100% - 10px));
+		text-align: center;
+	}
+	.label--s {
+		transform: translate(-50%, 10px);
+		text-align: center;
+	}
+	.label--w {
+		transform: translate(calc(-100% - 10px), -50%);
+	}
+	.label--e {
+		transform: translate(10px, -50%);
+	}
+
+	@media (max-width: 47.99rem) {
+		.is-minor,
+		.tick,
+		.region {
+			display: none;
+		}
+
+		/* West-anchored labels would run off the plate on narrow screens. */
+		.label--w {
+			transform: translate(-30%, 10px);
+		}
+
+		.plate__map {
+			margin: var(--s-3) var(--s-2);
+		}
+	}
+
+	.plate__foot {
+		display: grid;
+		gap: var(--s-3);
+		padding: var(--s-4);
+		border-top: 1px solid var(--c-border);
+	}
+
+	.legend {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--s-2) var(--s-5);
+		color: var(--c-text-2);
+	}
+
+	.legend li {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--s-2);
+	}
+
+	.key {
+		display: inline-block;
+		flex: none;
+	}
+
+	.key--node {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		border: 2px solid var(--c-accent-2);
+	}
+
+	.key--route {
+		width: 22px;
+		border-top: 2px dashed var(--c-accent-2);
+	}
+
+	.key--contour {
+		width: 22px;
+		height: 8px;
+		border: 1px solid #5d6d61;
+		border-radius: 50%;
+	}
+
+	.disclaimer {
+		font-size: var(--t-xs);
+		color: var(--c-text-2);
+		max-width: 62ch;
+	}
+</style>

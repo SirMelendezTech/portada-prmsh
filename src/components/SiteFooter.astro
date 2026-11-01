@@ -1,0 +1,143 @@
+---
+import Wordmark from './Wordmark.astro';
+import { linkAttrs } from '../config/links';
+import type { Dictionary } from '../i18n/es';
+
+interface Props {
+	copy: Dictionary;
+}
+const { copy } = Astro.props;
+const f = copy.footer;
+const year = new Date().getFullYear();
+
+const groups = [
+	{
+		title: f.platforms,
+		items: [
+			{ label: 'Meshtastic', ...linkAttrs('meshtastic'), ext: false },
+			{ label: 'MeshCore', ...linkAttrs('meshcore'), ext: false },
+		],
+	},
+	{
+		title: f.community,
+		items: [
+			{ label: 'Discord', ...linkAttrs('discord'), ext: true },
+			{ label: 'Facebook', ...linkAttrs('facebook'), ext: true },
+			{ label: 'Reddit', ...linkAttrs('reddit'), ext: true },
+		],
+	},
+];
+---
+
+<footer class="footer">
+	<div class="container footer__grid">
+		<div class="footer__brand">
+			<Wordmark />
+			<p>{f.description}</p>
+		</div>
+
+		<nav class="footer__nav" aria-label={copy.a11y.footerNav}>
+			{groups.map((g) => (
+				<div>
+					<h2 class="footer__title">{g.title}</h2>
+					<ul>
+						{g.items.map(({ label, ext, ...attrs }) => (
+							<li>
+								<a {...attrs}>
+									{label}
+									{ext && <span class="visually-hidden">{copy.a11y.newTab}</span>}
+								</a>
+							</li>
+						))}
+					</ul>
+				</div>
+			))}
+		</nav>
+
+		<div class="footer__legal">
+			<p>{f.legal}</p>
+			<p class="mono">
+				© <span id="year">{year}</span> {f.rights}
+			</p>
+		</div>
+	</div>
+</footer>
+
+<script is:inline>
+	// Keep the copyright year current even if the static build is old.
+	document.getElementById('year').textContent = String(new Date().getFullYear());
+</script>
+
+<style>
+	.footer {
+		border-top: 1px solid var(--c-border);
+		padding-block: var(--s-8) var(--s-6);
+		background: var(--c-surface);
+	}
+
+	.footer__grid {
+		display: grid;
+		gap: var(--s-7);
+	}
+
+	@media (min-width: 48rem) {
+		.footer__grid {
+			grid-template-columns: 1fr auto;
+		}
+
+		.footer__legal {
+			grid-column: 1 / -1;
+		}
+	}
+
+	.footer__brand {
+		display: grid;
+		gap: var(--s-3);
+		align-content: start;
+	}
+
+	.footer__brand p {
+		color: var(--c-text-2);
+	}
+
+	.footer__nav {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--s-8);
+	}
+
+	.footer__title {
+		font-family: var(--f-body);
+		font-size: var(--t-sm);
+		font-weight: 600;
+		letter-spacing: 0;
+		color: var(--c-text-2);
+		margin-bottom: var(--s-2);
+	}
+
+	.footer__nav a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		color: var(--c-text);
+		text-decoration: none;
+	}
+
+	.footer__nav a:hover {
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+
+	.footer__legal {
+		display: grid;
+		gap: var(--s-3);
+		padding-top: var(--s-5);
+		border-top: 1px solid var(--c-border);
+		font-size: var(--t-xs);
+		color: var(--c-text-2);
+	}
+
+	.footer__legal p:first-child {
+		max-width: 70ch;
+	}
+</style>

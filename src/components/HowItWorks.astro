@@ -1,0 +1,329 @@
+---
+import profile from '../data/profile.json';
+import type { Dictionary } from '../i18n/es';
+
+interface Props {
+	copy: Dictionary;
+}
+const { copy } = Astro.props;
+const h = copy.how;
+const d = h.diagram;
+
+// Chart geometry. 10× vertical exaggeration, stated on the chart.
+const KM = profile.stops[profile.stops.length - 1].km;
+const PX_PER_KM = 10;
+const EXAG = 15;
+const PX_PER_M = (PX_PER_KM * EXAG) / 1000;
+const MAX_M = 1400;
+const pad = { l: 44, r: 16, t: 40, b: 34 };
+const plotW = KM * PX_PER_KM;
+const plotH = MAX_M * PX_PER_M;
+const W = Math.ceil(pad.l + plotW + pad.r);
+const H = Math.ceil(pad.t + plotH + pad.b);
+
+const x = (km: number) => pad.l + km * PX_PER_KM;
+const y = (m: number) => pad.t + plotH - m * PX_PER_M;
+
+const samples = profile.samples;
+const ground = samples.map((s) => `${x(s.km).toFixed(1)},${y(s.m).toFixed(1)}`).join(' ');
+const area = `M${x(0)},${y(0)} L${ground.replaceAll(' ', ' L')} L${x(KM)},${y(0)} Z`;
+
+const ANT = 10; // metres of mast above ground, for the sight lines
+const at = (km: number) =>
+	samples.reduce((a, b) => (Math.abs(b.km - km) < Math.abs(a.km - km) ? b : a));
+const [a, relay, b] = profile.stops.map((s) => ({ ...s, m: at(s.km).m + ANT }));
+
+// Point of greatest obstruction on the direct Ponce–Arecibo line.
+const lineAt = (km: number) => a.m + ((b.m - a.m) * km) / KM;
+const hit = samples.reduce((w, s) => (s.m - lineAt(s.km) > w.m - lineAt(w.km) ? s : w));
+const hitY = y(lineAt(hit.km));
+
+const yTicks = [0, 500, 1000];
+const xTicks = [0, 10, 20, 30, 40, 50];
+---
+
+<section id="como-funciona" class="section" aria-labelledby="how-title">
+	<div class="container how">
+		<div class="how__text">
+			<header class="section-head">
+				<h2 id="how-title">{h.title}</h2>
+				<p>{h.body}</p>
+			</header>
+
+			<ol class="steps">
+				{h.steps.map((s, i) => (
+					<li class="step">
+						<span class="step__n mono" aria-hidden="true">
+							{String(i + 1).padStart(2, '0')}
+						</span>
+						<h3>{s.name}</h3>
+						<p>{s.body}</p>
+					</li>
+				))}
+			</ol>
+		</div>
+
+		<figure class="diagram" aria-labelledby="diagram-title diagram-caption">
+			<h3 class="diagram__title" id="diagram-title">
+				{d.title}
+			</h3>
+			<div class="diagram__scroll" tabindex="0" aria-labelledby="diagram-title">
+				<svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="diagram-title diagram-caption">
+					<g class="axis">
+						{yTicks.map((t) => (
+							<g>
+								<line x1={pad.l} x2={pad.l + plotW} y1={y(t)} y2={y(t)} class="gridline" />
+								<text x={pad.l - 8} y={y(t) + 4} text-anchor="end">
+									{t}
+								</text>
+							</g>
+						))}
+						{xTicks.map((t) => (
+							<text x={x(t)} y={y(0) + 20} text-anchor="middle">
+								{t}
+							</text>
+						))}
+					</g>
+
+					<path d={area} class="terrain" />
+					<polyline points={ground} class="ground" />
+
+					<!-- Direct path: blocked by the cordillera -->
+					<line x1={x(a.km)} y1={y(a.m)} x2={x(b.km)} y2={y(b.m)} class="direct" />
+					<g class="block" transform={`translate(${x(hit.km)} ${hitY})`}>
+						<circle r="9" />
+						<path d="M-4 -4 4 4M4 -4-4 4" />
+					</g>
+					<text x={x(hit.km) - 14} y={hitY - 8} class="note" text-anchor="end">
+						{d.blocked}
+					</text>
+
+					<!-- Two hops via the summit -->
+					<line x1={x(a.km)} y1={y(a.m)} x2={x(relay.km)} y2={y(relay.m)} class="hop" />
+					<line x1={x(relay.km)} y1={y(relay.m)} x2={x(b.km)} y2={y(b.m)} class="hop" />
+					<text
+						x={(x(a.km) + x(relay.km)) / 2 - 14}
+						y={(y(a.m) + y(relay.m)) / 2 - 6}
+						class="hop-label"
+						text-anchor="end"
+					>
+						{d.hop} 1
+					</text>
+					<text
+						x={(x(relay.km) + x(b.km)) / 2 + 10}
+						y={(y(relay.m) + y(b.m)) / 2 - 8}
+						class="hop-label"
+					>
+						{d.hop} 2
+					</text>
+
+					{[a, relay, b].map((s, i) => (
+						<g>
+							<circle
+								cx={x(s.km)}
+								cy={y(s.m)}
+								r={i === 1 ? 6 : 5}
+								class={i === 1 ? 'relay' : 'end'}
+							/>
+							<text
+								x={x(s.km)}
+								y={y(s.m) - 14}
+								text-anchor={i === 0 ? 'start' : i === 2 ? 'end' : 'middle'}
+								class="place"
+							>
+								{i === 1 ? `${s.name} (${d.relay.toLowerCase()})` : s.name}
+							</text>
+						</g>
+					))}
+				</svg>
+			</div>
+			<div class="diagram__meta mono">
+				<span>{d.distance}</span>
+				<span>{d.elevation}</span>
+				<span>{d.exaggeration}</span>
+			</div>
+			<figcaption id="diagram-caption">
+				{d.caption}
+				<span class="diagram__flag">{d.illustrative}</span>
+			</figcaption>
+		</figure>
+	</div>
+</section>
+
+<style>
+	.how {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--s-8);
+	}
+
+	@media (min-width: 64rem) {
+		.how {
+			grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+			align-items: start;
+		}
+
+		.diagram {
+			position: sticky;
+			top: 6rem;
+		}
+	}
+
+	.how .section-head {
+		margin-bottom: var(--s-7);
+	}
+
+	.steps {
+		display: grid;
+		border-top: 1px solid var(--c-border);
+	}
+
+	.step {
+		display: grid;
+		grid-template-columns: 3rem 1fr;
+		gap: var(--s-1) var(--s-4);
+		padding-block: var(--s-5);
+		border-bottom: 1px solid var(--c-border);
+	}
+
+	.step__n {
+		grid-row: span 2;
+		padding-top: 0.35rem;
+		color: var(--c-accent-2);
+	}
+
+	.step h3 {
+		font-size: var(--t-h3);
+	}
+
+	.step p {
+		color: var(--c-text-2);
+		max-width: 32rem;
+	}
+
+	.diagram {
+		margin: 0;
+		padding: var(--s-5);
+		border: 1px solid var(--c-border);
+		background: var(--c-surface);
+		border-radius: var(--r-card);
+	}
+
+	.diagram__title {
+		font-size: var(--t-lg);
+		margin-bottom: var(--s-4);
+	}
+
+	.diagram__scroll {
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		margin-inline: calc(var(--s-5) * -1);
+		padding-inline: var(--s-5);
+	}
+
+	.diagram svg {
+		min-width: 32rem;
+		width: 100%;
+		height: auto;
+		overflow: visible;
+	}
+
+	.axis text {
+		font-family: var(--f-mono);
+		font-size: 11px;
+		fill: #8c968b;
+	}
+
+	.gridline {
+		stroke: var(--c-border);
+		stroke-dasharray: 2 4;
+	}
+
+	.terrain {
+		fill: var(--c-surface-2);
+	}
+
+	.ground {
+		fill: none;
+		stroke: #5d6d61;
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.direct {
+		stroke: var(--c-text-2);
+		stroke-width: 1.5;
+		stroke-dasharray: 5 5;
+	}
+
+	.block circle {
+		fill: var(--c-surface);
+		stroke: var(--c-text);
+		stroke-width: 1.5;
+	}
+
+	.block path {
+		stroke: var(--c-text);
+		stroke-width: 2;
+		stroke-linecap: round;
+	}
+
+	.note {
+		font-family: var(--f-mono);
+		font-size: 11px;
+		fill: var(--c-text);
+	}
+
+	.hop {
+		stroke: var(--c-accent);
+		stroke-width: 2;
+		stroke-dasharray: 8 5;
+		stroke-linecap: round;
+	}
+
+	.hop-label {
+		font-family: var(--f-mono);
+		font-size: 11px;
+		fill: var(--c-accent);
+	}
+
+	.relay {
+		fill: var(--c-accent);
+	}
+
+	.end {
+		fill: var(--c-surface);
+		stroke: var(--c-accent-2);
+		stroke-width: 2.5;
+	}
+
+	.place {
+		font-family: var(--f-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--c-text);
+	}
+
+	.diagram__meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--s-1) var(--s-5);
+		margin-top: var(--s-4);
+		color: var(--c-text-2);
+	}
+
+	figcaption {
+		margin-top: var(--s-4);
+		padding-top: var(--s-4);
+		border-top: 1px solid var(--c-border);
+		font-size: var(--t-sm);
+		color: var(--c-text-2);
+		max-width: 60ch;
+	}
+
+	.diagram__flag {
+		display: block;
+		margin-top: var(--s-2);
+		color: var(--c-text);
+	}
+</style>

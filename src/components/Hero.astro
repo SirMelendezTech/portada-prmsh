@@ -1,0 +1,99 @@
+---
+import TerrainPlate from './TerrainPlate.astro';
+import { linkAttrs } from '../config/links';
+import type { Dictionary } from '../i18n/es';
+
+interface Props {
+	copy: Dictionary;
+}
+const { copy } = Astro.props;
+const h = copy.hero;
+---
+
+<section id="inicio" class="hero" aria-labelledby="hero-title">
+	<div class="container">
+		<div class="hero__grid">
+			<div class="hero__title">
+				<p class="hero__eyebrow mono">{h.eyebrow}</p>
+				<h1 id="hero-title">{h.title}</h1>
+			</div>
+			<div class="hero__body">
+				<p>{h.body}</p>
+				<div class="hero__actions">
+					<a class="btn btn--primary" {...linkAttrs('meshtastic')}>
+						{h.primary}
+					</a>
+					<a class="btn btn--secondary btn--teal" {...linkAttrs('meshcore')}>
+						{h.secondary}
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<div class="hero__plate">
+			<TerrainPlate copy={copy} />
+		</div>
+	</div>
+</section>
+
+<style>
+	.hero {
+		padding-top: clamp(2rem, 1rem + 3.5vw, 4.5rem);
+		padding-bottom: var(--section-y);
+	}
+
+	.hero__grid {
+		display: grid;
+		gap: var(--s-6);
+		align-items: end;
+	}
+
+	.hero__eyebrow {
+		color: var(--c-accent-2);
+		margin-bottom: var(--s-5);
+	}
+
+	h1 {
+		font-size: var(--t-h1);
+		font-weight: 700;
+		line-height: 0.98;
+		letter-spacing: -0.025em;
+		font-variation-settings: 'opsz' 96;
+		max-width: 12ch;
+	}
+
+	.hero__body {
+		display: grid;
+		gap: var(--s-6);
+		max-width: 30rem;
+	}
+
+	.hero__body p {
+		font-size: var(--t-lg);
+		line-height: 1.5;
+		color: var(--c-text-2);
+	}
+
+	.hero__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--s-3);
+	}
+
+	.hero__plate {
+		margin-top: clamp(2rem, 1rem + 3vw, 3.5rem);
+	}
+
+	@media (min-width: 64rem) {
+		.hero__grid {
+			grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+			gap: var(--s-8);
+		}
+	}
+
+	@media (max-width: 29.99rem) {
+		.hero__actions .btn {
+			flex: 1 1 100%;
+		}
+	}
+</style>

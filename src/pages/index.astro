@@ -1,0 +1,25 @@
+---
+import Base from '../layouts/Base.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import Hero from '../components/Hero.astro';
+import Platforms from '../components/Platforms.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import Community from '../components/Community.astro';
+import ClosingCta from '../components/ClosingCta.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { useCopy } from '../i18n';
+
+const copy = useCopy('es');
+---
+
+<Base copy={copy}>
+	<SiteHeader copy={copy} />
+	<main id="contenido">
+		<Hero copy={copy} />
+		<Platforms copy={copy} />
+		<HowItWorks copy={copy} />
+		<Community copy={copy} />
+		<ClosingCta copy={copy} />
+	</main>
+	<SiteFooter copy={copy} />
+</Base>

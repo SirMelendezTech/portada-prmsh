@@ -1,0 +1,145 @@
+---
+import { siDiscord, siFacebook, siReddit } from 'simple-icons';
+import ExternalIcon from './ExternalIcon.astro';
+import { links, linkAttrs } from '../config/links';
+import type { Dictionary } from '../i18n/es';
+
+interface Props {
+	copy: Dictionary;
+}
+const { copy } = Astro.props;
+const c = copy.community;
+
+const channels = [
+	{ id: 'discord' as const, icon: siDiscord, primary: true, ...c.channels.discord },
+	{ id: 'facebook' as const, icon: siFacebook, primary: false, ...c.channels.facebook },
+	{ id: 'reddit' as const, icon: siReddit, primary: false, ...c.channels.reddit },
+];
+---
+
+<section id="comunidad" class="section" aria-labelledby="community-title">
+	<div class="container">
+		<header class="section-head">
+			<h2 id="community-title">{c.title}</h2>
+			<p>{c.body}</p>
+		</header>
+
+		<ul class="channels">
+			{channels.map((ch) => (
+				<li class:list={['channel', { 'channel--primary': ch.primary }]}>
+					<div class="channel__head">
+						<svg class="channel__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+							<path d={ch.icon.path} fill="currentColor" />
+						</svg>
+						<h3 id={`ch-${ch.id}`}>{ch.name}</h3>
+					</div>
+					<p class="channel__text">{ch.body}</p>
+					<p class="channel__handle mono">{links[ch.id].display}</p>
+					<a
+						class:list={['btn', ch.primary ? 'btn--primary' : 'btn--secondary']}
+						aria-describedby={`ch-${ch.id}`}
+						{...linkAttrs(ch.id)}
+					>
+						{ch.cta}
+						<ExternalIcon />
+						<span class="visually-hidden">{copy.a11y.newTab}</span>
+					</a>
+				</li>
+			))}
+		</ul>
+	</div>
+</section>
+
+<style>
+	.channels {
+		display: grid;
+		gap: var(--s-5);
+	}
+
+	@media (min-width: 48rem) {
+		.channels {
+			grid-template-columns: 1fr 1fr;
+		}
+
+		.channel--primary {
+			grid-column: 1 / -1;
+		}
+	}
+
+	@media (min-width: 64rem) {
+		.channels {
+			grid-template-columns: 1.35fr 1fr 1fr;
+		}
+
+		.channel--primary {
+			grid-column: auto;
+		}
+	}
+
+	.channel {
+		display: flex;
+		flex-direction: column;
+		gap: var(--s-3);
+		padding: var(--s-5);
+		border: 1px solid var(--c-border);
+		border-radius: var(--r-card);
+		background: var(--c-surface);
+		transition: border-color 200ms var(--ease-out);
+	}
+
+	.channel:hover,
+	.channel:focus-within {
+		border-color: var(--c-border-strong);
+	}
+
+	.channel--primary {
+		background: var(--c-surface-2);
+		border-color: var(--c-border-strong);
+	}
+
+	.channel--primary:hover,
+	.channel--primary:focus-within {
+		border-color: var(--c-accent);
+	}
+
+	.channel__head {
+		display: flex;
+		align-items: center;
+		gap: var(--s-3);
+	}
+
+	.channel__icon {
+		width: 28px;
+		height: 28px;
+		color: var(--c-text);
+	}
+
+	.channel--primary .channel__icon {
+		color: var(--c-accent);
+		width: 32px;
+		height: 32px;
+	}
+
+	.channel h3 {
+		font-size: var(--t-h3);
+	}
+
+	.channel--primary h3 {
+		font-size: clamp(1.625rem, 1.4rem + 0.8vw, 2rem);
+	}
+
+	.channel__text {
+		color: var(--c-text-2);
+		flex: 1;
+	}
+
+	.channel__handle {
+		color: var(--c-text-2);
+		overflow-wrap: anywhere;
+	}
+
+	.channel .btn {
+		align-self: flex-start;
+		margin-top: var(--s-3);
+	}
+</style>
