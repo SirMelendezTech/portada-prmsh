@@ -1,13 +1,14 @@
 ---
 import Wordmark from './Wordmark.astro';
 import { linkAttrs } from '../config/links';
-import type { Dictionary } from '../i18n/es';
+import { routes, type Chrome } from '../i18n/chrome';
 
 interface Props {
-	copy: Dictionary;
+	chrome: Chrome;
 }
-const { copy } = Astro.props;
+const { chrome: copy } = Astro.props;
 const f = copy.footer;
+const isEn = copy.lang.startsWith('en');
 const year = new Date().getFullYear();
 
 const groups = [
@@ -16,6 +17,12 @@ const groups = [
 		items: [
 			{ label: 'Meshtastic', ...linkAttrs('meshtastic'), ext: false },
 			{ label: 'MeshCore', ...linkAttrs('meshcore'), ext: false },
+		],
+	},
+	{
+		title: f.guides,
+		items: [
+			{ label: f.protocols, href: isEn ? routes.protocols.en : routes.protocols.es, ext: false },
 		],
 	},
 	{

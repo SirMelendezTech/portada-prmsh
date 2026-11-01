@@ -5,35 +5,44 @@ import '@fontsource/ibm-plex-mono/latin-400.css';
 import '@fontsource/ibm-plex-mono/latin-500.css';
 import '../styles/global.css';
 import { site } from '../config/links';
-import type { Dictionary } from '../i18n/es';
+import type { Chrome } from '../i18n/chrome';
 
 interface Props {
-	copy: Dictionary;
+	chrome: Chrome;
+	title: string;
+	description: string;
+	ogImageAlt: string;
+	/** Same page in other languages, including this one. */
+	alternates?: { hreflang: string; path: string }[];
+	jsonLd?: Record<string, unknown>;
 }
 
-const { copy } = Astro.props;
+const { chrome, title, description, ogImageAlt, alternates = [], jsonLd } = Astro.props;
 const canonical = new URL(Astro.url.pathname, site.url).href;
 const ogImage = new URL('/og.png', site.url).href;
 
-const jsonLd = {
+const structured = jsonLd ?? {
 	'@context': 'https://schema.org',
 	'@type': 'WebSite',
 	name: site.name,
 	alternateName: site.descriptor,
 	url: site.url,
-	inLanguage: copy.lang,
-	description: copy.meta.description,
+	inLanguage: chrome.lang,
+	description,
 };
 ---
 
 <!doctype html>
-<html lang={copy.lang}>
+<html lang={chrome.lang}>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>{copy.meta.title}</title>
-		<meta name="description" content={copy.meta.description} />
+		<title>{title}</title>
+		<meta name="description" content={description} />
 		<link rel="canonical" href={canonical} />
+		{alternates.map((a) => (
+			<link rel="alternate" hreflang={a.hreflang} href={new URL(a.path, site.url).href} />
+		))}
 		<meta name="theme-color" content="#0B0D0C" />
 		<meta name="color-scheme" content="dark" />
 
@@ -44,26 +53,26 @@ const jsonLd = {
 
 		<meta property="og:type" content="website" />
 		<meta property="og:site_name" content={site.name} />
-		<meta property="og:locale" content={copy.ogLocale} />
-		<meta property="og:title" content={copy.meta.title} />
-		<meta property="og:description" content={copy.meta.description} />
+		<meta property="og:locale" content={chrome.ogLocale} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
 		<meta property="og:url" content={canonical} />
 		<meta property="og:image" content={ogImage} />
 		<meta property="og:image:width" content="1200" />
 		<meta property="og:image:height" content="630" />
-		<meta property="og:image:alt" content={copy.meta.ogImageAlt} />
+		<meta property="og:image:alt" content={ogImageAlt} />
 		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:title" content={copy.meta.title} />
-		<meta name="twitter:description" content={copy.meta.description} />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImage} />
-		<meta name="twitter:image:alt" content={copy.meta.ogImageAlt} />
+		<meta name="twitter:image:alt" content={ogImageAlt} />
 
-		<link rel="preload" href="/terrain/puerto-rico.svg" as="image" type="image/svg+xml" />
-		<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+		<slot name="head" />
+		<script type="application/ld+json" set:html={JSON.stringify(structured)} />
 	</head>
 	<body>
 		<a class="skip" href="#contenido">
-			{copy.a11y.skip}
+			{chrome.a11y.skip}
 		</a>
 		<slot />
 	</body>

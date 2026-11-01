@@ -1,5 +1,6 @@
 ---
 import { links, linkAttrs } from '../config/links';
+import { routes } from '../i18n/chrome';
 import type { Dictionary } from '../i18n/es';
 
 interface Props {
@@ -116,7 +117,12 @@ const routeEdges = new Set(['0-2', '2-3', '3-5', '5-6']);
 			))}
 		</div>
 
-		<p class="note">{p.note}</p>
+		<div class="note">
+			<p>{p.note}</p>
+			<a class="note__link" href={routes.protocols.es}>
+				{p.compare}
+			</a>
+		</div>
 	</div>
 </section>
 
@@ -227,6 +233,16 @@ const routeEdges = new Set(['0-2', '2-3', '3-5', '5-6']);
 
 	.card .btn {
 		align-self: flex-start;
+	}
+
+	.note__link {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		color: var(--c-text);
+		font-weight: 600;
+		text-decoration-color: var(--c-accent-2);
+		text-underline-offset: 4px;
 	}
 
 	.note {

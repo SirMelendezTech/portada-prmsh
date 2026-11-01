@@ -7,10 +7,15 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
 	site: 'https://prmsh.com',
 	trailingSlash: 'ignore',
+	i18n: {
+		locales: ['es', 'en'],
+		defaultLocale: 'es',
+		routing: { prefixDefaultLocale: false },
+	},
 	integrations: [
 		svelte(),
 		sitemap({
-			i18n: { defaultLocale: 'es', locales: { es: 'es-PR' } },
+			i18n: { defaultLocale: 'es', locales: { es: 'es-PR', en: 'en-US' } },
 		}),
 	],
 });

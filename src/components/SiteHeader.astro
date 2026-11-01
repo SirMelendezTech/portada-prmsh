@@ -3,20 +3,36 @@ import Wordmark from './Wordmark.astro';
 import MobileNav from './MobileNav.svelte';
 import ExternalIcon from './ExternalIcon.astro';
 import { linkAttrs } from '../config/links';
-import type { Dictionary } from '../i18n/es';
+import { routes, type Chrome } from '../i18n/chrome';
 
 interface Props {
-	copy: Dictionary;
+	chrome: Chrome;
+	/** Path of this page in the other language, if one exists. */
+	switchHref?: string;
 }
-const { copy } = Astro.props;
+const { chrome: copy, switchHref } = Astro.props;
+const here = Astro.url.pathname;
+const protocolsHref = copy.lang.startsWith('en') ? routes.protocols.en : routes.protocols.es;
 
 const items = [
-	{ label: copy.nav.home, href: '#inicio' },
+	{ label: copy.nav.home, href: '/', lang: copy.lang.startsWith('en') ? 'es' : undefined },
 	{ label: copy.nav.meshtastic, ...linkAttrs('meshtastic') },
 	{ label: copy.nav.meshcore, ...linkAttrs('meshcore') },
-	{ label: copy.nav.community, href: '#comunidad' },
+	{
+		label: copy.nav.protocols,
+		href: protocolsHref,
+		'aria-current': here === protocolsHref ? ('page' as const) : undefined,
+	},
+	{
+		label: copy.nav.community,
+		href: '/#comunidad',
+		lang: copy.lang.startsWith('en') ? 'es' : undefined,
+	},
 ];
 const discord = { label: copy.nav.discord, ...linkAttrs('discord') };
+const langSwitch = switchHref
+	? { label: copy.switchTo.label, href: switchHref, lang: copy.switchTo.lang }
+	: undefined;
 ---
 
 <header class="header">
@@ -35,6 +51,18 @@ const discord = { label: copy.nav.discord, ...linkAttrs('discord') };
 			</ul>
 		</nav>
 
+		{langSwitch && (
+			<a
+				class="header__lang mono"
+				href={langSwitch.href}
+				hreflang={langSwitch.lang}
+				lang={langSwitch.lang}
+				title={copy.switchTo.title}
+			>
+				{langSwitch.label}
+			</a>
+		)}
+
 		<a class="btn btn--primary header__cta" {...linkAttrs('discord')}>
 			{copy.nav.discord}
 			<ExternalIcon />
@@ -44,7 +72,7 @@ const discord = { label: copy.nav.discord, ...linkAttrs('discord') };
 		<div class="header__mobile">
 			<MobileNav
 				client:media="(max-width: 47.99rem)"
-				items={items}
+				items={langSwitch ? [...items, langSwitch] : items}
 				cta={discord}
 				openLabel={copy.a11y.menuOpen}
 				closeLabel={copy.a11y.menuClose}
@@ -100,8 +128,33 @@ const discord = { label: copy.nav.discord, ...linkAttrs('discord') };
 		transition: color 160ms var(--ease-out);
 	}
 
-	.header__nav a:hover {
+	.header__nav a:hover,
+	.header__nav a[aria-current='page'] {
 		color: var(--c-text);
+	}
+
+	.header__nav a[aria-current='page'] {
+		text-decoration: underline;
+		text-decoration-color: var(--c-accent-2);
+		text-underline-offset: 6px;
+		text-decoration-thickness: 2px;
+	}
+
+	.header__lang {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		padding-inline: var(--s-3);
+		border: 1px solid var(--c-border);
+		border-radius: var(--r-control);
+		color: var(--c-text-2);
+		text-decoration: none;
+		font-size: var(--t-xs);
+	}
+
+	.header__lang:hover {
+		color: var(--c-text);
+		border-color: var(--c-border-strong);
 	}
 
 	.header__cta {
@@ -116,6 +169,7 @@ const discord = { label: copy.nav.discord, ...linkAttrs('discord') };
 
 	@media (max-width: 47.99rem) {
 		.header__nav,
+		.header__lang,
 		.header__cta {
 			display: none;
 		}

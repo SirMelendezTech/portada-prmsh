@@ -8,12 +8,19 @@ import Community from '../components/Community.astro';
 import ClosingCta from '../components/ClosingCta.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import { useCopy } from '../i18n';
+import { chrome } from '../i18n/chrome';
 
 const copy = useCopy('es');
 ---
 
-<Base copy={copy}>
-	<SiteHeader copy={copy} />
+<Base
+	chrome={chrome.es}
+	title={copy.meta.title}
+	description={copy.meta.description}
+	ogImageAlt={copy.meta.ogImageAlt}
+>
+	<link slot="head" rel="preload" href="/terrain/puerto-rico.svg" as="image" type="image/svg+xml" />
+	<SiteHeader chrome={chrome.es} />
 	<main id="contenido">
 		<Hero copy={copy} />
 		<Platforms copy={copy} />
@@ -21,5 +28,5 @@ const copy = useCopy('es');
 		<Community copy={copy} />
 		<ClosingCta copy={copy} />
 	</main>
-	<SiteFooter copy={copy} />
+	<SiteFooter chrome={chrome.es} />
 </Base>

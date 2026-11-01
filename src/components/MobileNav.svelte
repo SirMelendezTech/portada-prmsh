@@ -1,7 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	type Item = { label: string; href: string; target?: string; rel?: string };
+	type Item = {
+		label: string;
+		href: string;
+		target?: string;
+		rel?: string;
+		lang?: string;
+		'aria-current'?: 'page';
+	};
 
 	type Props = {
 		items: Item[];
@@ -78,7 +85,14 @@
 			<ul>
 				{#each items as item (item.href)}
 					<li>
-						<a href={item.href} target={item.target} rel={item.rel} onclick={() => close()}>
+						<a
+							href={item.href}
+							target={item.target}
+							rel={item.rel}
+							lang={item.lang}
+							aria-current={item['aria-current']}
+							onclick={() => close()}
+						>
 							{item.label}
 						</a>
 					</li>

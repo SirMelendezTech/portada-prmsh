@@ -1,0 +1,689 @@
+---
+import Base from '../layouts/Base.astro';
+import SiteHeader from './SiteHeader.astro';
+import SiteFooter from './SiteFooter.astro';
+import ExternalIcon from './ExternalIcon.astro';
+import RoutingStepper from './RoutingStepper.svelte';
+import { chrome, routes, type Locale } from '../i18n/chrome';
+import { protocolsCopy, reviewed, sources } from '../i18n/protocols';
+import { linkAttrs, site } from '../config/links';
+
+interface Props {
+	locale: Locale;
+}
+const { locale } = Astro.props;
+const ui = chrome[locale];
+const t = protocolsCopy[locale];
+const other: Locale = locale === 'es' ? 'en' : 'es';
+const path = routes.protocols[locale];
+
+const alternates = [
+	{ hreflang: 'es-PR', path: routes.protocols.es },
+	{ hreflang: 'en', path: routes.protocols.en },
+	{ hreflang: 'x-default', path: routes.protocols.es },
+];
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'TechArticle',
+	headline: t.hero.title,
+	description: t.meta.description,
+	inLanguage: ui.lang,
+	dateModified: reviewed.date,
+	url: new URL(path, site.url).href,
+	about: [
+		{ '@type': 'SoftwareApplication', name: 'Meshtastic' },
+		{ '@type': 'SoftwareApplication', name: 'MeshCore' },
+	],
+	isPartOf: { '@type': 'WebSite', name: site.name, url: site.url },
+};
+---
+
+<Base
+	chrome={ui}
+	title={t.meta.title}
+	description={t.meta.description}
+	ogImageAlt={t.meta.ogImageAlt}
+	alternates={alternates}
+	jsonLd={jsonLd}
+>
+	<SiteHeader chrome={ui} switchHref={routes.protocols[other]} />
+
+	<main id="contenido">
+		<header class="hero">
+			<div class="container hero__grid">
+				<h1>{t.hero.title}</h1>
+				<div class="hero__side">
+					<p class="hero__lead">{t.hero.lead}</p>
+					<dl class="hero__meta">
+						<div>
+							<dt>{t.hero.reviewedLabel}</dt>
+							<dd>
+								<time datetime={reviewed.date}>{t.hero.reviewedDate}</time>
+							</dd>
+						</div>
+						<div>
+							<dt>{t.hero.versionsLabel}</dt>
+							<dd class="mono">{t.hero.mtVersion}</dd>
+							<dd class="mono">{t.hero.mcVersion}</dd>
+						</div>
+					</dl>
+				</div>
+			</div>
+		</header>
+
+		<section class="section" aria-labelledby="short-title">
+			<div class="container">
+				<h2 id="short-title" class="sr-heading">
+					{t.short.title}
+				</h2>
+				<div class="pick">
+					{(['mt', 'mc'] as const).map((k) => (
+						<div class:list={['pick__col', `pick__col--${k}`]}>
+							<h3>{t.short[k].title}</h3>
+							<ul>
+								{t.short[k].items.map((item) => (
+									<li>{item}</li>
+								))}
+							</ul>
+						</div>
+					))}
+				</div>
+				<p class="incompat">
+					<strong>{t.short.incompatTitle}</strong>
+					{t.short.incompat}
+				</p>
+			</div>
+		</section>
+
+		<section class="section" aria-labelledby="table-title">
+			<div class="container">
+				<h2 id="table-title" class="block-title">
+					{t.table.title}
+				</h2>
+				<table class="compare">
+					<caption class="visually-hidden">{t.table.caption}</caption>
+					<thead>
+						<tr>
+							<th scope="col">{t.table.feature}</th>
+							<th scope="col" class="col-mt">
+								Meshtastic
+							</th>
+							<th scope="col" class="col-mc">
+								MeshCore
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						{t.table.rows.map((r) => (
+							<tr>
+								<th scope="row">{r.k}</th>
+								<td data-label="Meshtastic" class="col-mt">
+									{r.mt}
+								</td>
+								<td data-label="MeshCore" class="col-mc">
+									{r.mc}
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section class="section" aria-labelledby="routing-title">
+			<div class="container">
+				<header class="block-head">
+					<h2 id="routing-title" class="block-title">
+						{t.routing.title}
+					</h2>
+					<p>{t.routing.body}</p>
+				</header>
+				<RoutingStepper
+					client:visible
+					steps={t.routing.steps}
+					labels={{
+						prev: t.routing.prev,
+						next: t.routing.next,
+						reset: t.routing.reset,
+						stepOf: t.routing.stepOf,
+						legendClient: t.routing.legendClient,
+						legendCompanion: t.routing.legendCompanion,
+						legendRepeater: t.routing.legendRepeater,
+						legendTx: t.routing.legendTx,
+						legendQuiet: t.routing.legendQuiet,
+					}}
+				/>
+				<p class="fineprint">{t.routing.illustrative}</p>
+			</div>
+		</section>
+
+		<section class="section" aria-labelledby="pr-title">
+			<div class="container">
+				<h2 id="pr-title" class="block-title">
+					{t.pr.title}
+				</h2>
+				<div class="pr">
+					{t.pr.items.map((item) => (
+						<article class="pr__item">
+							<h3>{item.title}</h3>
+							<p>{item.body}</p>
+							{'href' in item && item.href && (
+								<a href={item.href} lang={locale === 'en' ? 'es' : undefined}>
+									{item.link}
+								</a>
+							)}
+						</article>
+					))}
+				</div>
+			</div>
+		</section>
+
+		<section class="section" aria-labelledby="faq-title">
+			<div class="container faq-grid">
+				<h2 id="faq-title" class="block-title">
+					{t.faq.title}
+				</h2>
+				<div class="faq">
+					{t.faq.items.map((item) => (
+						<details>
+							<summary>
+								<h3>{item.q}</h3>
+							</summary>
+							<p>{item.a}</p>
+						</details>
+					))}
+				</div>
+			</div>
+		</section>
+
+		<section class="section" aria-labelledby="sources-title">
+			<div class="container faq-grid">
+				<div>
+					<h2 id="sources-title" class="block-title">
+						{t.sources.title}
+					</h2>
+					<p class="fineprint">{t.sources.body}</p>
+				</div>
+				<ul class="sources">
+					{sources.map((s) => (
+						<li>
+							<span class="sources__project mono">{s.project}</span>
+							<a href={s.url} target="_blank" rel="noopener noreferrer" lang="en">
+								{s.title}
+								<ExternalIcon />
+								<span class="visually-hidden">{ui.a11y.newTab}</span>
+							</a>
+						</li>
+					))}
+				</ul>
+			</div>
+		</section>
+
+		<section class="section cta" aria-labelledby="cta-title">
+			<div class="container cta__inner">
+				<div>
+					<h2 id="cta-title">{t.cta.title}</h2>
+					<p>{t.cta.body}</p>
+				</div>
+				<div class="cta__actions">
+					<a class="btn btn--primary" {...linkAttrs('meshtastic')}>
+						{t.cta.mt}
+					</a>
+					<a class="btn btn--secondary btn--teal" {...linkAttrs('meshcore')}>
+						{t.cta.mc}
+					</a>
+					<a class="btn btn--secondary" {...linkAttrs('discord')}>
+						{t.cta.discord}
+						<ExternalIcon />
+						<span class="visually-hidden">{ui.a11y.newTab}</span>
+					</a>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<SiteFooter chrome={ui} />
+</Base>
+
+<style>
+	.hero {
+		padding-block: clamp(2.5rem, 1.5rem + 4vw, 5.5rem) clamp(2.5rem, 1.5rem + 3vw, 4.5rem);
+	}
+
+	.hero__grid {
+		display: grid;
+		gap: var(--s-6);
+		align-items: end;
+	}
+
+	@media (min-width: 64rem) {
+		.hero__grid {
+			grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+			gap: var(--s-8);
+		}
+	}
+
+	h1 {
+		font-size: clamp(2.5rem, 1.5rem + 4vw, 4.5rem);
+		font-weight: 700;
+		line-height: 1;
+		letter-spacing: -0.025em;
+		font-variation-settings: 'opsz' 96;
+		max-width: 13ch;
+	}
+
+	.hero__side {
+		display: grid;
+		gap: var(--s-6);
+	}
+
+	.hero__lead {
+		font-size: var(--t-lg);
+		line-height: 1.5;
+		color: var(--c-text-2);
+		max-width: 34rem;
+	}
+
+	.hero__meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--s-3) var(--s-7);
+		margin: 0;
+		padding-top: var(--s-4);
+		border-top: 1px solid var(--c-border);
+		font-size: var(--t-sm);
+	}
+
+	.hero__meta dt {
+		color: var(--c-text-2);
+		font-size: var(--t-xs);
+		margin-bottom: var(--s-1);
+	}
+
+	.hero__meta dd {
+		margin: 0;
+	}
+
+	/* Short answer */
+	.sr-heading {
+		font-size: var(--t-h2);
+		margin-bottom: var(--s-6);
+	}
+
+	.pick {
+		display: grid;
+		gap: var(--s-5);
+	}
+
+	@media (min-width: 48rem) {
+		.pick {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+
+	.pick__col {
+		--tone: var(--c-accent);
+		padding-top: var(--s-4);
+		border-top: 2px solid var(--tone);
+	}
+
+	.pick__col--mc {
+		--tone: var(--c-accent-2);
+	}
+
+	.pick__col h3 {
+		font-size: var(--t-h3);
+		margin-bottom: var(--s-4);
+	}
+
+	.pick__col li {
+		position: relative;
+		padding: var(--s-3) 0 var(--s-3) var(--s-5);
+		border-bottom: 1px solid var(--c-border);
+		color: var(--c-text-2);
+	}
+
+	.pick__col li::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 1.15em;
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		border: 2px solid var(--tone);
+	}
+
+	.incompat {
+		margin-top: var(--s-7);
+		max-width: 46rem;
+		padding: var(--s-5);
+		background: var(--c-surface);
+		border: 1px solid var(--c-border);
+		border-left: 3px solid var(--c-text);
+		border-radius: var(--r-card);
+		color: var(--c-text-2);
+	}
+
+	.incompat strong {
+		display: block;
+		color: var(--c-text);
+		font-family: var(--f-display);
+		font-size: var(--t-lg);
+		margin-bottom: var(--s-1);
+	}
+
+	/* Section heads */
+	.block-title {
+		font-size: var(--t-h2);
+		margin-bottom: var(--s-6);
+	}
+
+	.block-head {
+		max-width: 44rem;
+		margin-bottom: var(--s-6);
+	}
+
+	.block-head .block-title {
+		margin-bottom: var(--s-3);
+	}
+
+	.block-head p {
+		color: var(--c-text-2);
+		font-size: var(--t-lg);
+	}
+
+	.fineprint {
+		margin-top: var(--s-4);
+		max-width: 60ch;
+		color: var(--c-text-2);
+		font-size: var(--t-sm);
+	}
+
+	/* Comparison table */
+	.compare {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: var(--t-sm);
+	}
+
+	.compare thead th {
+		position: sticky;
+		top: 4.25rem;
+		z-index: 1;
+		background: var(--c-bg);
+		padding: var(--s-3) var(--s-4);
+		text-align: left;
+		font-family: var(--f-display);
+		font-size: var(--t-lg);
+		font-weight: 650;
+		border-bottom: 1px solid var(--c-border-strong);
+	}
+
+	.compare thead th:first-child {
+		font-family: var(--f-body);
+		font-size: var(--t-sm);
+		font-weight: 500;
+		color: var(--c-text-2);
+	}
+
+	.compare thead .col-mt {
+		box-shadow: inset 0 3px 0 var(--c-accent);
+	}
+
+	.compare thead .col-mc {
+		box-shadow: inset 0 3px 0 var(--c-accent-2);
+	}
+
+	.compare tbody th,
+	.compare td {
+		padding: var(--s-4);
+		vertical-align: top;
+		text-align: left;
+		border-bottom: 1px solid var(--c-border);
+		line-height: 1.55;
+	}
+
+	.compare tbody th {
+		width: 22%;
+		font-weight: 600;
+		color: var(--c-text);
+	}
+
+	.compare td {
+		width: 39%;
+		color: var(--c-text-2);
+	}
+
+	.compare tbody tr:hover td,
+	.compare tbody tr:hover th {
+		background: var(--c-surface);
+	}
+
+	@media (max-width: 47.99rem) {
+		.compare thead {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip: rect(0 0 0 0);
+		}
+
+		.compare,
+		.compare tbody,
+		.compare tr,
+		.compare th,
+		.compare td {
+			display: block;
+			width: auto;
+		}
+
+		.compare tr {
+			padding-block: var(--s-4);
+			border-bottom: 1px solid var(--c-border);
+		}
+
+		.compare tbody th,
+		.compare td {
+			width: auto;
+			padding: var(--s-1) 0;
+			border: 0;
+		}
+
+		.compare tbody th {
+			font-family: var(--f-display);
+			font-size: var(--t-lg);
+			margin-bottom: var(--s-2);
+		}
+
+		.compare td {
+			padding-left: var(--s-4);
+			margin-top: var(--s-2);
+			border-left: 2px solid var(--c-accent);
+		}
+
+		.compare td.col-mc {
+			border-left-color: var(--c-accent-2);
+		}
+
+		.compare td::before {
+			content: attr(data-label);
+			display: block;
+			color: var(--c-text);
+			font-weight: 600;
+		}
+	}
+
+	/* Puerto Rico */
+	.pr {
+		display: grid;
+		gap: var(--s-6);
+	}
+
+	@media (min-width: 48rem) {
+		.pr {
+			grid-template-columns: repeat(3, 1fr);
+		}
+	}
+
+	.pr__item {
+		display: grid;
+		gap: var(--s-3);
+		align-content: start;
+		padding-top: var(--s-4);
+		border-top: 1px solid var(--c-border-strong);
+	}
+
+	.pr__item h3 {
+		font-size: var(--t-h3);
+	}
+
+	.pr__item p {
+		color: var(--c-text-2);
+	}
+
+	.pr__item a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		font-weight: 600;
+		text-decoration-color: var(--c-accent-2);
+		text-underline-offset: 4px;
+	}
+
+	/* FAQ + sources */
+	.faq-grid {
+		display: grid;
+		gap: var(--s-6);
+	}
+
+	@media (min-width: 64rem) {
+		.faq-grid {
+			grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+			align-items: start;
+		}
+	}
+
+	.faq {
+		border-top: 1px solid var(--c-border);
+	}
+
+	details {
+		border-bottom: 1px solid var(--c-border);
+	}
+
+	summary {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--s-4);
+		min-height: 56px;
+		padding-block: var(--s-3);
+		cursor: pointer;
+		list-style: none;
+	}
+
+	summary::-webkit-details-marker {
+		display: none;
+	}
+
+	summary::after {
+		content: '+';
+		flex: none;
+		font-family: var(--f-mono);
+		font-size: 1.25rem;
+		color: var(--c-accent-2);
+		transition: transform 200ms var(--ease-out);
+	}
+
+	details[open] summary::after {
+		transform: rotate(45deg);
+	}
+
+	summary h3 {
+		flex: 1;
+		font-family: var(--f-body);
+		font-size: var(--t-base);
+		font-weight: 600;
+		letter-spacing: 0;
+		line-height: 1.4;
+	}
+
+	details p {
+		padding-bottom: var(--s-5);
+		max-width: 60ch;
+		color: var(--c-text-2);
+	}
+
+	.sources {
+		border-top: 1px solid var(--c-border);
+	}
+
+	.sources li {
+		display: grid;
+		grid-template-columns: 7rem 1fr;
+		gap: var(--s-3);
+		align-items: center;
+		border-bottom: 1px solid var(--c-border);
+	}
+
+	.sources__project {
+		color: var(--c-text-2);
+	}
+
+	.sources a {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--s-2);
+		min-height: 48px;
+		color: var(--c-text);
+		text-decoration: none;
+	}
+
+	.sources a:hover {
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+
+	.sources a :global(svg) {
+		width: 0.9em;
+		height: 0.9em;
+		color: var(--c-text-2);
+	}
+
+	/* CTA */
+	.cta__inner {
+		display: grid;
+		gap: var(--s-6);
+	}
+
+	@media (min-width: 64rem) {
+		.cta__inner {
+			grid-template-columns: 1fr auto;
+			align-items: end;
+		}
+	}
+
+	.cta h2 {
+		font-size: var(--t-h2);
+		margin-bottom: var(--s-3);
+	}
+
+	.cta p {
+		color: var(--c-text-2);
+		font-size: var(--t-lg);
+	}
+
+	.cta__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--s-3);
+	}
+
+	@media (max-width: 29.99rem) {
+		.cta__actions .btn {
+			flex: 1 1 100%;
+		}
+	}
+</style>

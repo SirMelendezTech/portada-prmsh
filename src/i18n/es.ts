@@ -2,9 +2,11 @@
  * Spanish (Puerto Rico) copy. Every user-visible string on the landing
  * page lives here so an `en.ts` with the same shape can be added later.
  */
+import { chrome } from './chrome';
+
 export const es = {
-	lang: 'es-PR',
-	ogLocale: 'es_PR',
+	lang: chrome.es.lang,
+	ogLocale: chrome.es.ogLocale,
 	meta: {
 		title: 'PRMSH | Meshtastic, MeshCore y redes mesh en Puerto Rico',
 		description:
@@ -12,22 +14,8 @@ export const es = {
 		ogImageAlt:
 			'Mapa topográfico de Puerto Rico con la Cordillera Central y nodos de radio ilustrativos. PRMSH, comunidad de redes mesh LoRa.',
 	},
-	a11y: {
-		skip: 'Saltar al contenido',
-		newTab: '(abre en una pestaña nueva)',
-		menuOpen: 'Abrir menú',
-		menuClose: 'Cerrar menú',
-		primaryNav: 'Principal',
-		footerNav: 'Enlaces de PRMSH',
-		home: 'PRMSH, inicio',
-	},
-	nav: {
-		home: 'Inicio',
-		meshtastic: 'Meshtastic',
-		meshcore: 'MeshCore',
-		community: 'Comunidad',
-		discord: 'Únete al Discord',
-	},
+	a11y: chrome.es.a11y,
+	nav: chrome.es.nav,
 	hero: {
 		eyebrow: 'Puerto Rico / Redes inalámbricas descentralizadas',
 		title: 'Puerto Rico, conectado nodo a nodo.',
@@ -57,6 +45,7 @@ export const es = {
 		title: 'Dos plataformas. Una comunidad.',
 		body: 'Explora los ecosistemas de redes mesh LoRa y encuentra la plataforma que mejor se adapta a tus intereses y proyectos.',
 		note: 'Meshtastic y MeshCore son proyectos independientes. Sus protocolos, aplicaciones y redes no son intercambiables: cada sitio te explica cómo empezar con la suya.',
+		compare: 'Compara Meshtastic y MeshCore lado a lado',
 		items: {
 			meshtastic: {
 				name: 'Meshtastic',
@@ -130,14 +119,7 @@ export const es = {
 		meshcore: 'Explorar MeshCore',
 		discord: 'Unirme a Discord',
 	},
-	footer: {
-		description: 'Comunidad de redes mesh LoRa en Puerto Rico.',
-		platforms: 'Plataformas',
-		community: 'Comunidad',
-		legal:
-			'PRMSH es un portal comunitario independiente. No está afiliado a Meshtastic LLC, al proyecto MeshCore ni a ningún fabricante de hardware. Meshtastic® es una marca registrada de Meshtastic LLC.',
-		rights: 'PRMSH',
-	},
+	footer: chrome.es.footer,
 };
 
 export type Dictionary = typeof es;
