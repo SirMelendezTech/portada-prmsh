@@ -2,6 +2,8 @@
 
 Landing page for [prmsh.com](https://prmsh.com/): the entry point to the Meshtastic and MeshCore communities in Puerto Rico. Astro (static) + TypeScript, with Svelte only for the two pieces that need the browser (mobile menu, map annotation reveal).
 
+**Topics:** [`meshtastic`](https://github.com/topics/meshtastic) · [`meshcore`](https://github.com/topics/meshcore) · [`puerto-rico`](https://github.com/topics/puerto-rico) · [`lora`](https://github.com/topics/lora) · [`mesh-network`](https://github.com/topics/mesh-network) · [`off-grid-communication`](https://github.com/topics/off-grid-communication) · [`astro`](https://github.com/topics/astro) · [`svelte`](https://github.com/topics/svelte) · [`typescript`](https://github.com/topics/typescript) · [`landing-page`](https://github.com/topics/landing-page) · [`community`](https://github.com/topics/community) · [`github-pages`](https://github.com/topics/github-pages)
+
 ## Commands
 
 | Command                      | What it does                                                                             |
