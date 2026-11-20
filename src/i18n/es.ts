@@ -10,7 +10,7 @@ export const es = {
 	meta: {
 		title: 'PRMSH | Meshtastic, MeshCore y redes mesh en Puerto Rico',
 		description:
-			'Explora Meshtastic y MeshCore en Puerto Rico. Descubre las redes mesh LoRa, conecta con la comunidad y participa en Discord, Facebook y Reddit.',
+			'Explora Meshtastic y MeshCore en Puerto Rico. Descubre las redes mesh LoRa, conecta con la comunidad y participa en Discord.',
 		ogImageAlt:
 			'Mapa topográfico de Puerto Rico con la Cordillera Central y nodos de radio ilustrativos. PRMSH, comunidad de redes mesh LoRa.',
 	},
@@ -99,16 +99,6 @@ export const es = {
 				name: 'Discord',
 				body: 'Conversaciones, colaboración y ayuda entre miembros.',
 				cta: 'Únete al Discord',
-			},
-			facebook: {
-				name: 'Facebook',
-				body: 'Conecta con la comunidad y participa en las conversaciones.',
-				cta: 'Visitar grupo',
-			},
-			reddit: {
-				name: 'Reddit',
-				body: 'Comparte preguntas, experiencias y conversaciones sobre Meshtastic en Puerto Rico.',
-				cta: 'Visitar subreddit',
 			},
 		},
 	},
