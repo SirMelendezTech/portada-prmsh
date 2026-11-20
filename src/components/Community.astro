@@ -1,5 +1,5 @@
 ---
-import { siDiscord, siFacebook, siReddit } from 'simple-icons';
+import { siDiscord } from 'simple-icons';
 import ExternalIcon from './ExternalIcon.astro';
 import { links, linkAttrs } from '../config/links';
 import type { Dictionary } from '../i18n/es';
@@ -12,8 +12,6 @@ const c = copy.community;
 
 const channels = [
 	{ id: 'discord' as const, icon: siDiscord, primary: true, ...c.channels.discord },
-	{ id: 'facebook' as const, icon: siFacebook, primary: false, ...c.channels.facebook },
-	{ id: 'reddit' as const, icon: siReddit, primary: false, ...c.channels.reddit },
 ];
 ---
 
@@ -54,26 +52,7 @@ const channels = [
 	.channels {
 		display: grid;
 		gap: var(--s-5);
-	}
-
-	@media (min-width: 48rem) {
-		.channels {
-			grid-template-columns: 1fr 1fr;
-		}
-
-		.channel--primary {
-			grid-column: 1 / -1;
-		}
-	}
-
-	@media (min-width: 64rem) {
-		.channels {
-			grid-template-columns: 1.35fr 1fr 1fr;
-		}
-
-		.channel--primary {
-			grid-column: auto;
-		}
+		container-type: inline-size;
 	}
 
 	.channel {
@@ -141,5 +120,33 @@ const channels = [
 	.channel .btn {
 		align-self: flex-start;
 		margin-top: var(--s-3);
+	}
+
+	/* Wide container: heading + copy on the left, handle + CTA on the right. */
+	@container (min-width: 44rem) {
+		.channel {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			grid-template-areas:
+				'head   handle'
+				'text   cta';
+			column-gap: var(--s-6);
+			align-items: center;
+			padding: var(--s-6) var(--s-5);
+		}
+
+		.channel__head { grid-area: head; }
+		.channel__text { grid-area: text; max-width: 52ch; }
+
+		.channel__handle {
+			grid-area: handle;
+			justify-self: end;
+		}
+
+		.channel .btn {
+			grid-area: cta;
+			justify-self: end;
+			margin-top: 0;
+		}
 	}
 </style>
